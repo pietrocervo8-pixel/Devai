@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevAI // Real Neural Intelligence - Ultimate Pro Core</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #000103;
+            color: #e2e8f0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        /* Sidebar de historial */
+        aside {
+            width: 260px;
+            background: #050b14;
+            border-right: 1px solid #1e293b;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+        .nuevo-btn {
+            background: #00ffcc;
+            color: #000;
+            border: none;
+            padding: 10px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .nuevo-btn:hover {
+            background: #00b388;
+        }
+        .historial-titulo {
+            font-size: 11px;
+            color: #00ffcc;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+        .historial-lista {
+            flex: 1;
+            overflow-y: auto;
+        }
+        .historial-item {
+            background: #0b132b;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #1e293b;
+        }
+        /* Panel principal del chat */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: radial-gradient(circle at center, #0a1128 0%, #000103 100%);
+        }
+        header {
+            padding: 15px 30px;
+            border-bottom: 1px solid #1e293b;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(5, 11, 20, 0.8);
+        }
+        h1 {
+            font-size: 14px;
+            letter-spacing: 2px;
+            color: #00ffcc;
+        }
+        #chat-canvas {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .mensaje-ia, .mensaje-usuario {
+            max-width: 75%;
+            padding: 14px 18px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+        .mensaje-ia {
+            background: #0b132b;
+            border-left: 3px solid #00ffcc;
+            color: #e2e8f0;
+            align-self: flex-start;
+        }
+        .mensaje-usuario {
+            background: #1e293b;
+            color: #fff;
+            align-self: flex-end;
+        }
+        .input-panel {
+            padding: 20px 30px;
+            border-top: 1px solid #1e293b;
+            background: #050b14;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        #userInput {
+            flex: 1;
+            background: #000103;
+            border: 1px solid #1e293b;
+            padding: 15px;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+        }
+        #userInput:focus {
+            border-color: #00ffcc;
+        }
+        .send-action {
+            background: #00ffcc;
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .send-action:hover {
+            background: #00b388;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside>
+        <button class="nuevo-btn" onclick="nuevoChat()">+ Nuevo Chat</button>
+        <div class="historial-titulo">HISTORIAL DE SESIONES</div>
+        <div class="historial-lista" id="historialLista">
+            <div class="historial-item">Sesión Actual <span>●</span></div>
+        </div>
+    </aside>
+
+    <!-- Main Chat Area -->
+    <main>
+        <header>
+            <h1>DEVAI // NÚCLEO WEB Y NEURONAL PRO</h1>
+            <div style="font-size: 12px; color: #00ffcc;">OPERADOR: ACTIVO</div>
+        </header>
+
+        <div id="chat-canvas">
+            <div class="mensaje-ia">¡Hola, Operador! El núcleo con buscador web automático está activo. ¿Qué investigamos o resolvemos hoy?</div>
+        </div>
+
+        <div class="input-panel">
+            <input type="text" id="userInput" placeholder="Escribe tu consulta o comando para la IA..." onkeydown="chequearEnter(event)">
+            <button class="send-action" onclick="enviarMensaje()">Ejecutar</button>
+        </div>
+    </main>
+
+    <!-- SCRIPT DE CONEXIÓN CON EL BACKEND DE NODE Y EL BUSCADOR WEB -->
+    <script>
+        // Importar el módulo de búsqueda web que creamos en ia_pro.js
+        const { buscarYResumir } = require('./ia_pro.js');
+
+        function chequearEnter(event) {
+            if (event.key === 'Enter') {
+                enviarMensaje();
+            }
+        }
+
+        async function enviarMensaje() {
+            const inputField = document.getElementById('userInput');
+            const texto = inputField.value.trim();
+            if (!texto) return;
+
+            const chatCanvas = document.getElementById('chat-canvas');
+
+            // 1. Mostrar mensaje del usuario en pantalla
+            const userBubble = document.createElement('div');
+            userBubble.className = 'mensaje-usuario';
+            userBubble.innerText = texto;
+            chatCanvas.appendChild(userBubble);
+
+            inputField.value = ''; // Limpiar caja
+            chatCanvas.scrollTop = chatCanvas.scrollHeight;
+
+            // 2. Crear burbuja temporal de estado (Buscando en la red...)
+            const loadingBubble = document.createElement('div');
+            loadingBubble.className = 'mensaje-ia';
+            loadingBubble.style.color = '#00ffcc';
+            loadingBubble.innerText = "🔍 DevAI está investigando en la red...";
+            chatCanvas.appendChild(loadingBubble);
+            chatCanvas.scrollTop = chatCanvas.scrollHeight;
+
+            // 3. Ejecutar la búsqueda web real y síntesis
+            let respuestaIA = "";
+            try {
+                respuestaIA = await buscarYResumir(texto);
+            } catch (error) {
+                respuestaIA = "Ocurrió un error al procesar la solicitud con la red.";
+            }
+
+            // 4. Remover indicador de carga y mostrar la respuesta final limpia
+            chatCanvas.removeChild(loadingBubble);
+
+            const aiBubble = document.createElement('div');
+            aiBubble.className = 'mensaje-ia';
+            aiBubble.innerText = respuestaIA;
+            chatCanvas.appendChild(aiBubble);
+
+            // Auto-scroll hacia abajo
+            chatCanvas.scrollTop = chatCanvas.scrollHeight;
+        }
+
+        function nuevoChat() {
+            const chatCanvas = document.getElementById('chat-canvas');
+            chatCanvas.innerHTML = `<div class="mensaje-ia">Nueva sesión iniciada. ¿Qué consultamos ahora, Operador?</div>`;
+        }
+    </script>
+</body>
+</html>
