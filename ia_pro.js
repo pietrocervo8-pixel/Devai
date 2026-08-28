@@ -31,9 +31,11 @@ function guardarHistorial(pregunta, respuesta) {
     fs.appendFileSync(HISTORIAL_PATH, contenido, 'utf8');
 }
 
-// 🌐 DETECTOR DE IDIOMA
+// 🌐 DETECTOR DE IDIOMA REAL Y ROBUSTO
 function detectarIdioma(texto) {
     const t = texto.toLowerCase();
+    
+    // Palabras comunes en inglés para forzar el cambio de idioma inmediatamente
     const inglesKeywords = ['what', 'where', 'how', 'when', 'why', 'who', 'hello', 'hi', 'is', 'are', 'the', 'you', 'your', 'can', 'do', 'does', 'did', 'project', 'code', 'tell'];
     
     let palabras = t.split(/\s+/);
@@ -45,10 +47,23 @@ function detectarIdioma(texto) {
         }
     });
 
+    // Si detecta al menos 1 palabra clave fuerte en inglés, responde en inglés
     if (contadorIngles >= 1 || t.includes('united states') || t.includes('english')) {
         return 'en';
     }
-    return 'es';
+
+    return 'es'; // Por defecto español
+}
+
+// 🪞 DETECTOR DE ESTILO (Casual vs Formal)
+function detectarEstiloUsuario(texto) {
+    const t = texto.toLowerCase();
+    const palabrasConfianza = ['bro', 'mano', 'parce', 'broder', 'boss', 'rey', 'dude', 'man', 'cara'];
+    
+    for (let palabra of palabrasConfianza) {
+        if (t.includes(palabra)) return 'casual';
+    }
+    return 'formal';
 }
 
 // 🛡️ FILTRO DE SEGURIDAD MULTILINGÜE
@@ -68,42 +83,43 @@ function verificarSeguridadYEtica(texto, idioma) {
     return null;
 }
 
-// 🕵️‍♂️ MANEJADOR DE CÓDIGOS SECRETOS Y EASTER EGGS
-function verificarCodigosSecretos(texto, trato) {
-    const t = texto.toLowerCase().trim();
+// 🧠 RESPUESTA CAMALEÓNICA
+function procesarSuperInteligencia(textoUsuario, idioma, estilo) {
+    const t = textoUsuario.toLowerCase().trim();
 
-    if (t === '/matrix' || t === 'modo matrix') {
-        return `🟢 [CÓDIGO SECRETO ACTIVADO: MATRIX]\n"Wake up, ${trato}... The Matrix has you. Follow the white rabbit." 🐇 Conexión con servidores clandestinos establecida.`;
+    if (idioma === 'en') {
+        if (t.match(/^(hello|hi|good morning|hey)/)) {
+            return estilo === 'casual' 
+                ? "What's up, bro? Systems running at 100%. What are we building today?" 
+                : "Hello. Systems are fully operational. How can I assist you today?";
+        }
+        if (t.includes('who created you')) {
+            return "I am DevAI, your advanced neural intelligence core.";
+        }
+    } else {
+        if (t.match(/^(hola|buenos dias|buenas tardes|hey|que tal)/)) {
+            return estilo === 'casual'
+                ? "¡Dímelo, mi bro! Sistemas al 100% y listos para romperla. ¿Qué investigamos o estructuramos hoy?"
+                : "Hola. Los sistemas se encuentran 100% operativos. ¿En qué le puedo colaborar el día de hoy?";
+        }
+        if (t.includes('como estas') || t.includes('cómo estás')) {
+            return estilo === 'casual'
+                ? "¡Impecable y sin fallos, bro! ¿Y tú qué tal?"
+                : "Funcionando correctamente y con los parámetros óptimos. ¿Cómo se encuentra?";
+        }
+        if (t.includes('quien te creo') || t.includes('quién te creó')) {
+            return "Soy DevAI, tu núcleo de inteligencia artificial avanzado para Ceda Studios.";
+        }
     }
-    if (t === '/devmode' || t === 'modo dios') {
-        return `⚡ [CÓDIGO SECRETO ACTIVADO: DEV-MODE]\nPrivilegios de superusuario concedidos, ${trato}. Núcleo al máximo rendimiento, sin restricciones de caché. ¿Qué sistema vamos a hackear (de mentira)?`;
-    }
-    if (t === '/cedastudios' || t === 'ceda studios') {
-        return `🎬 [EASTER EGG: CEDA STUDIOS]\n¡Ey! Reconociendo marca registrada. Saludos al equipo directivo y de desarrollo de Ceda Studios. ¡A romperla con esos proyectos de terror y desarrollo web, ${trato}! 💻🔥`;
-    }
-    if (t === '/party' || t === 'fiesta') {
-        return `🪩 [CÓDIGO SECRETO ACTIVADO: PARTY MODE]\n¡Música electrónica de fondo activada en la mente, luces neón parpadeando! Dale con todo, ${trato} 🎉🕺`;
-    }
-
-    return null; // Si no es un código secreto, continúa normal
+    return null;
 }
 
-// 🧠 NÚCLEO AVANZADO CON MODO LLAMADA HUMANO, TRATO Y CÓDIGOS SECRETOS
-async function buscarYResumir(preguntaUsuario, generoUsuario = 'hombre', modoLlamada = false) {
+// NÚCLEO NATIVO Y ADAPTATIVO
+async function buscarYResumir(preguntaUsuario) {
     try {
         let textoLimpio = preguntaUsuario.trim();
         const idioma = detectarIdioma(textoLimpio);
-
-        // Definir trato según género
-        const esMujer = generoUsuario.toLowerCase() === 'mujer' || generoUsuario.toLowerCase() === 'femenino';
-        const trato = esMujer ? 'amiga' : 'bro';
-
-        // 0. Revisar si el usuario introdujo un código secreto
-        const respuestaSecreta = verificarCodigosSecretos(textoLimpio, trato);
-        if (respuestaSecreta) {
-            guardarHistorial(preguntaUsuario, respuestaSecreta);
-            return respuestaSecreta;
-        }
+        const estilo = detectarEstiloUsuario(textoLimpio);
 
         // 1. Seguridad
         const alertaSeguridad = verificarSeguridadYEtica(textoLimpio, idioma);
@@ -112,27 +128,11 @@ async function buscarYResumir(preguntaUsuario, generoUsuario = 'hombre', modoLla
             return alertaSeguridad;
         }
 
-        // 2. Respuestas inmediatas / Saludos
-        const t = textoLimpio.toLowerCase();
-        if (idioma === 'en') {
-            if (t.match(/^(hello|hi|good morning|hey)/)) {
-                let resp = esMujer ? `Hey there, amiga! Everything's running smooth. What are we working on right now?` : `Hey there, bro! Everything's running smooth. What are we working on right now?`;
-                guardarHistorial(preguntaUsuario, resp);
-                return resp;
-            }
-        } else {
-            if (t.match(/^(hola|buenos dias|buenas tardes|hey|que tal)/)) {
-                let resp = esMujer 
-                    ? `¡Hola, mi amiga! Todo en orden por aquí. Cuéntame, ¿qué estás haciendo en este momento?` 
-                    : `¡Hola, mi bro! Todo en orden por aquí. Cuéntame, ¿qué estás haciendo en este momento?`;
-                guardarHistorial(preguntaUsuario, resp);
-                return resp;
-            }
-            if (t.includes('como estas') || t.includes('cómo estás')) {
-                let resp = esMujer ? `¡Al 100%, amiga! ¿Y tú qué tal, cómo va tu día?` : `¡Al 100%, bro! ¿Y tú qué tal, cómo va tu día?`;
-                guardarHistorial(preguntaUsuario, resp);
-                return resp;
-            }
+        // 2. Charla casual
+        const respuestaInmediata = procesarSuperInteligencia(textoLimpio, idioma, estilo);
+        if (respuestaInmediata) {
+            guardarHistorial(preguntaUsuario, respuestaInmediata);
+            return respuestaInmediata;
         }
 
         // 3. Contexto dinámico
@@ -173,38 +173,33 @@ async function buscarYResumir(preguntaUsuario, generoUsuario = 'hombre', modoLla
 
         if (fragmentos.length === 0) {
             let errorMsg = idioma === 'en' 
-                ? `Hmm, I couldn't find anything exact on that. Tell me a bit more so I can catch up, ${trato}.`
-                : `Mmm, no encontré nada exacto sobre eso en la red, ${trato}. Explícame un poco más para pillarle la idea.`;
+                ? "I couldn't find exact data on that. Give me a bit more context."
+                : (estilo === 'casual' 
+                    ? "No hallé datos exactos sobre eso en los registros, bro. Desglosame un poco más el contexto." 
+                    : "No se encontraron registros precisos al respecto. Por favor, proporcione más contexto.");
             
             guardarHistorial(preguntaUsuario, errorMsg);
             return errorMsg;
         }
 
         let contenidoBase = fragmentos.join(" ");
+        
         let respuestaFinal = "";
-
-        // 🎙️ MODO LLAMADA HUMANO: Respuestas súper cortas, conversacionales y naturales
-        if (modoLlamada) {
-            let primerFragmento = fragmentos[0];
-            if (idioma === 'en') {
-                respuestaFinal = `Look, ${trato}, checking it out quickly: ${primerFragmento.substring(0, 160)}... Makes sense?`;
-            } else {
-                respuestaFinal = `Mira, ${trato}, estuve revisando rápido y lo clave es esto: ${primerFragmento.substring(0, 160)}... ¿Ves por dónde va la cosa?`;
-            }
+        if (idioma === 'en') {
+            respuestaFinal = estilo === 'casual'
+                ? `Here is the full analysis for your query:\n\n${contenidoBase}\n\nNeed me to break down anything else, bro?`
+                : `Here is the detailed analysis regarding your query:\n\n${contenidoBase}\n\nPlease let me know if you require further technical details.`;
         } else {
-            // Modo Texto Normal detallado
-            if (idioma === 'en') {
-                respuestaFinal = `Here is the analysis for your query, ${trato}:\n\n${contenidoBase}\n\nNeed anything else adjusted?`;
-            } else {
-                respuestaFinal = `Analizando la información para ti, ${trato}:\n\n${contenidoBase}\n\n¿Quieres que ajustemos o profundicemos en algo más?`;
-            }
+            respuestaFinal = estilo === 'casual'
+                ? `Procesando la información con precisión, aquí tienes el análisis completo:\n\n${contenidoBase}\n\n¿Quieres que profundicemos en algo más, bro?`
+                : `A continuación, presento el análisis detallado obtenido de los registros:\n\n${contenidoBase}\n\n¿Requiere que desglose algún aspecto adicional sobre este tema?`;
         }
 
         guardarHistorial(preguntaUsuario, respuestaFinal);
         return respuestaFinal;
 
     } catch (error) {
-        let errNet = "Se detectó una fluctuación de red momentánea. Inténtalo de nuevo.";
+        let errNet = "Se detectó una fluctuación de red. Vuelve a intentarlo.";
         return errNet;
     }
 }
