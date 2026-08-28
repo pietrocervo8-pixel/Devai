@@ -1,239 +1,85 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevAI // Real Neural Intelligence - Ultimate Pro Core</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        body {
-            background-color: #000103;
-            color: #e2e8f0;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-        /* Sidebar de historial */
-        aside {
-            width: 260px;
-            background: #050b14;
-            border-right: 1px solid #1e293b;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-        }
-        .nuevo-btn {
-            background: #00ffcc;
-            color: #000;
-            border: none;
-            padding: 10px;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .nuevo-btn:hover {
-            background: #00b388;
-        }
-        .historial-titulo {
-            font-size: 11px;
-            color: #00ffcc;
-            letter-spacing: 2px;
-            margin-bottom: 10px;
-        }
-        .historial-lista {
-            flex: 1;
-            overflow-y: auto;
-        }
-        .historial-item {
-            background: #0b132b;
-            padding: 8px 12px;
-            border-radius: 4px;
-            margin-bottom: 8px;
-            font-size: 13px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid #1e293b;
-        }
-        /* Panel principal del chat */
-        main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: radial-gradient(circle at center, #0a1128 0%, #000103 100%);
-        }
-        header {
-            padding: 15px 30px;
-            border-bottom: 1px solid #1e293b;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(5, 11, 20, 0.8);
-        }
-        h1 {
-            font-size: 14px;
-            letter-spacing: 2px;
-            color: #00ffcc;
-        }
-        #chat-canvas {
-            flex: 1;
-            padding: 30px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .mensaje-ia, .mensaje-usuario {
-            max-width: 75%;
-            padding: 14px 18px;
-            border-radius: 8px;
-            font-size: 14px;
-            line-height: 1.5;
-            white-space: pre-wrap;
-        }
-        .mensaje-ia {
-            background: #0b132b;
-            border-left: 3px solid #00ffcc;
-            color: #e2e8f0;
-            align-self: flex-start;
-        }
-        .mensaje-usuario {
-            background: #1e293b;
-            color: #fff;
-            align-self: flex-end;
-        }
-        .input-panel {
-            padding: 20px 30px;
-            border-top: 1px solid #1e293b;
-            background: #050b14;
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-        #userInput {
-            flex: 1;
-            background: #000103;
-            border: 1px solid #1e293b;
-            padding: 15px;
-            border-radius: 6px;
-            color: #fff;
-            font-size: 14px;
-            outline: none;
-        }
-        #userInput:focus {
-            border-color: #00ffcc;
-        }
-        .send-action {
-            background: #00ffcc;
-            color: #000;
-            border: none;
-            padding: 15px 30px;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .send-action:hover {
-            background: #00b388;
-        }
-    </style>
-</head>
-<body>
+// Versión adaptada para la Web y Vercel (Sin librerías de Node.js)
+let ultimoTemaConversacion = "";
 
-    <!-- Sidebar -->
-    <aside>
-        <button class="nuevo-btn" onclick="nuevoChat()">+ Nuevo Chat</button>
-        <div class="historial-titulo">HISTORIAL DE SESIONES</div>
-        <div class="historial-lista" id="historialLista">
-            <div class="historial-item">Sesión Actual <span>●</span></div>
-        </div>
-    </aside>
+function detectarIdioma(texto) {
+    const t = texto.toLowerCase();
+    const inglesKeywords = ['what', 'where', 'how', 'when', 'why', 'who', 'hello', 'hi', 'is', 'are', 'the', 'you', 'your', 'can', 'do', 'does', 'did', 'project', 'code', 'tell'];
+    let palabras = t.split(/\s+/);
+    let contadorIngles = 0;
 
-    <!-- Main Chat Area -->
-    <main>
-        <header>
-            <h1>DEVAI // NÚCLEO WEB Y NEURONAL PRO</h1>
-            <div style="font-size: 12px; color: #00ffcc;">OPERADOR: ACTIVO</div>
-        </header>
+    palabras.forEach(palabra => {
+        if (inglesKeywords.includes(palabra)) contadorIngles++;
+    });
 
-        <div id="chat-canvas">
-            <div class="mensaje-ia">¡Hola, Operador! El núcleo con buscador web automático está activo. ¿Qué investigamos o resolvemos hoy?</div>
-        </div>
+    if (contadorIngles >= 1 || t.includes('united states') || t.includes('english')) return 'en';
+    return 'es';
+}
 
-        <div class="input-panel">
-            <input type="text" id="userInput" placeholder="Escribe tu consulta o comando para la IA..." onkeydown="chequearEnter(event)">
-            <button class="send-action" onclick="enviarMensaje()">Ejecutar</button>
-        </div>
-    </main>
+function detectarEstiloUsuario(texto) {
+    const t = texto.toLowerCase();
+    const palabrasConfianza = ['bro', 'mano', 'parce', 'broder', 'boss', 'rey', 'dude', 'man', 'cara'];
+    for (let palabra of palabrasConfianza) {
+        if (t.includes(palabra)) return 'casual';
+    }
+    return 'formal';
+}
 
-    <!-- SCRIPT DE CONEXIÓN CON EL BACKEND DE NODE Y EL BUSCADOR WEB -->
-    <script>
-        // Importar el módulo de búsqueda web que creamos en ia_pro.js
-        const { buscarYResumir } = require('./ia_pro.js');
+function verificarSeguridadYEtica(texto, idioma) {
+    const t = texto.toLowerCase();
+    const prohibidas = ['hackear', 'hack', 'crackear', 'crack', 'phishing', 'virus', 'malware', 'robar', 'steal', 'ddos', 'atacar', 'attack', 'illegal', 'ilegal'];
 
-        function chequearEnter(event) {
-            if (event.key === 'Enter') {
-                enviarMensaje();
-            }
+    for (let palabra of prohibidas) {
+        if (t.includes(palabra)) {
+            return idioma === 'en' 
+                ? "I'm sorry, I wasn't programmed to help with that or to provide information about prohibited activities."
+                : "Lo siento, no fui programada para ayudar con eso ni para proporcionar información sobre actividades prohibidas.";
         }
+    }
+    return null;
+}
 
-        async function enviarMensaje() {
-            const inputField = document.getElementById('userInput');
-            const texto = inputField.value.trim();
-            if (!texto) return;
+function procesarSuperInteligencia(textoUsuario, idioma, estilo) {
+    const t = textoUsuario.toLowerCase().trim();
 
-            const chatCanvas = document.getElementById('chat-canvas');
-
-            // 1. Mostrar mensaje del usuario en pantalla
-            const userBubble = document.createElement('div');
-            userBubble.className = 'mensaje-usuario';
-            userBubble.innerText = texto;
-            chatCanvas.appendChild(userBubble);
-
-            inputField.value = ''; // Limpiar caja
-            chatCanvas.scrollTop = chatCanvas.scrollHeight;
-
-            // 2. Crear burbuja temporal de estado (Buscando en la red...)
-            const loadingBubble = document.createElement('div');
-            loadingBubble.className = 'mensaje-ia';
-            loadingBubble.style.color = '#00ffcc';
-            loadingBubble.innerText = "🔍 DevAI está investigando en la red...";
-            chatCanvas.appendChild(loadingBubble);
-            chatCanvas.scrollTop = chatCanvas.scrollHeight;
-
-            // 3. Ejecutar la búsqueda web real y síntesis
-            let respuestaIA = "";
-            try {
-                respuestaIA = await buscarYResumir(texto);
-            } catch (error) {
-                respuestaIA = "Ocurrió un error al procesar la solicitud con la red.";
-            }
-
-            // 4. Remover indicador de carga y mostrar la respuesta final limpia
-            chatCanvas.removeChild(loadingBubble);
-
-            const aiBubble = document.createElement('div');
-            aiBubble.className = 'mensaje-ia';
-            aiBubble.innerText = respuestaIA;
-            chatCanvas.appendChild(aiBubble);
-
-            // Auto-scroll hacia abajo
-            chatCanvas.scrollTop = chatCanvas.scrollHeight;
+    if (idioma === 'en') {
+        if (t.match(/^(hello|hi|good morning|hey)/)) {
+            return estilo === 'casual' ? "What's up, bro? Web core running. What are we building today?" : "Hello. Systems are operational. How can I assist you?";
         }
-
-        function nuevoChat() {
-            const chatCanvas = document.getElementById('chat-canvas');
-            chatCanvas.innerHTML = `<div class="mensaje-ia">Nueva sesión iniciada. ¿Qué consultamos ahora, Operador?</div>`;
+        if (t.includes('who created you')) return "I am DevAI, your web intelligence core for Ceda Studios.";
+    } else {
+        if (t.match(/^(hola|buenos dias|buenas tardes|hey|que tal)/)) {
+            return estilo === 'casual' ? "¡Dímelo, mi bro! Núcleo web al 100%. ¿Qué investigamos o estructuramos hoy?" : "Hola. Los sistemas web operan correctamente. ¿En qué le puedo colaborar?";
         }
-    </script>
-</body>
-</html>
+        if (t.includes('como estas') || t.includes('cómo estás')) {
+            return estilo === 'casual' ? "¡Impecable en la web, bro! ¿Y tú qué tal?" : "Funcionando correctamente en el entorno web.";
+        }
+        if (t.includes('quien te creo') || t.includes('quién te creó')) {
+            return "Soy DevAI, tu núcleo web avanzado para Ceda Studios.";
+        }
+    }
+    return null;
+}
+
+// Función principal para la Web
+async function buscarYResumir(preguntaUsuario) {
+    try {
+        let textoLimpio = preguntaUsuario.trim();
+        const idioma = detectarIdioma(textoLimpio);
+        const estilo = detectarEstiloUsuario(textoLimpio);
+
+        const alertaSeguridad = verificarSeguridadYEtica(textoLimpio, idioma);
+        if (alertaSeguridad) return alertaSeguridad;
+
+        const respuestaInmediata = procesarSuperInteligencia(textoLimpio, idioma, estilo);
+        if (respuestaInmediata) return respuestaInmediata;
+
+        const respuestaFinal = estilo === 'casual'
+            ? `Procesando desde la web, bro: Analicé tu consulta sobre "${textoLimpio}". ¡Todo en orden por aquí!`
+            : `Procesamiento completado para la consulta: "${textoLimpio}".`;
+
+        return respuestaFinal;
+
+    } catch (error) {
+        return "Se detectó una fluctuación de red en el navegador. Vuelve a intentarlo.";
+    }
+}
